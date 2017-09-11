@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AuthorizationServer.Config;
+using AuthorizationServer.Stores;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,8 +25,12 @@ namespace AuthorizationServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IApplicationStore, InMemoryApplicationStore>();
+            services.AddSingleton<JwtOTPGrantValidator>();
+            services.AddMvc();
+
             services.AddIdentityServer()
-                .AddTemporarySigningCredential()
+                .AddDeveloperSigningCredential()
                 .AddInMemoryApiResources(Resources.Get())
                 .AddInMemoryClients(Clients.Get());
         }
@@ -37,6 +42,8 @@ namespace AuthorizationServer
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMvc();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace AuthorizationServer
                     ClientId = "client",
 
                     // no interactive user, use the clientid/secret for authentication
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    AllowedGrantTypes =  new []{"jwt-otp"},
 
                     // secret for authentication
                     ClientSecrets =
