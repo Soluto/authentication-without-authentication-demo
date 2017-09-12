@@ -26,6 +26,10 @@ namespace AuthorizationServer.Stores
 
         public Task<ApplicationEntity> Fetch(string appId)
         {
+            if (!mApplications.ContainsKey(appId)){
+                return Task.FromResult<ApplicationEntity>(null);
+            }
+
             return Task.FromResult(mApplications[appId]);
         }
 

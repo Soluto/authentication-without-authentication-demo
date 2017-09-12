@@ -26,17 +26,17 @@ namespace AuthorizationServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IApplicationStore, InMemoryApplicationStore>();
-            services.AddSingleton<JwtOTPGrantValidator>();
             services.AddMvc();
 
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
                 .AddInMemoryApiResources(Resources.Get())
-                .AddInMemoryClients(Clients.Get());
+                .AddInMemoryClients(Clients.Get())
+                .AddExtensionGrantValidator<JwtOTPGrantValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -44,6 +44,9 @@ namespace AuthorizationServer
             }
 
             app.UseMvc();
+            app.UseIdentityServer();
+
+            loggerFactory.AddConsole(LogLevel.Debug);
         }
     }
 }

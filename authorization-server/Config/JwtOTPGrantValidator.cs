@@ -8,6 +8,7 @@ using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
 using Jose;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AuthorizationServer.Config
 {
@@ -98,8 +99,8 @@ namespace AuthorizationServer.Config
                     .Property("DeviceId", application.Id);*/
 
                 var publicKey = RSA.Create(new RSAParameters{
-                    Exponent = Convert.FromBase64String(application.PublicKey.e),
-                    Modulus = Convert.FromBase64String(application.PublicKey.n)
+                    Exponent = Base64UrlEncoder.DecodeBytes(application.PublicKey.e),
+                    Modulus = Base64UrlEncoder.DecodeBytes(application.PublicKey.n)
                 });
 
                 payload = JWT.Decode<AuthenticationPayload>(
@@ -121,9 +122,7 @@ namespace AuthorizationServer.Config
 
         private static void ValidateParameters(string userName, string password)
         {
-            Guid dummy;
-
-            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || !Guid.TryParse(userName, out dummy))
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 throw new ValidationFailedException("User or password is null");
             }

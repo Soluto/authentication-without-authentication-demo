@@ -9,10 +9,10 @@ namespace AuthorizationServer
             {
                 new Client
                 {
-                    ClientId = "client",
+                    ClientId = "ruby",
 
                     // no interactive user, use the clientid/secret for authentication
-                    AllowedGrantTypes =  new []{"jwt-otp"},
+                    AllowedGrantTypes =  {"jwt-otp"},
 
                     // secret for authentication
                     ClientSecrets =
