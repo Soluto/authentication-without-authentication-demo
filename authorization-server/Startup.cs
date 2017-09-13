@@ -28,7 +28,9 @@ namespace AuthorizationServer
             services.AddSingleton<IApplicationStore, InMemoryApplicationStore>();
             services.AddMvc();
 
-            services.AddIdentityServer()
+            var builder = services.AddIdentityServer(options => {
+                options.IssuerUri = "http://authorization-server";
+            })
                 .AddDeveloperSigningCredential()
                 .AddInMemoryApiResources(Resources.Get())
                 .AddInMemoryClients(Clients.Get())

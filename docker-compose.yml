@@ -1,0 +1,12 @@
+version: '3'
+services:
+  authorization-server:
+    build: 
+      context: ./authorization-server
+    ports:
+     - "8081:80"
+  sensitive-api:
+    build: 
+      context: ./sensitive-api
+    ports:
+     - "8082:80"

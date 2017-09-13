@@ -31,9 +31,13 @@ namespace sensitive_api
 
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                     .AddIdentityServerAuthentication(options => {
-                        options.Authority = "http://localhost:5000";
+                        options.Authority = "http://authorization-server";
                         options.RequireHttpsMetadata = false;
                         options.RoleClaimType = "scope";
+                        options.JwtBearerEvents.OnAuthenticationFailed += (context) => {
+                            Console.WriteLine(context.Exception);
+                            return Task.CompletedTask;
+                        };
                     });
         }
 
