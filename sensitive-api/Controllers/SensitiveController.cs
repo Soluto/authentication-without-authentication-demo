@@ -10,7 +10,6 @@ namespace sensitive_api.Controllers
     {
         [HttpGet]
         [Authorize(
-            //AuthenticationSchemes = IdentityServerAuthenticationDefaults.AuthenticationScheme,
             Roles = "sensitive.read"
             )]
         public IActionResult GetSensitiveData()
