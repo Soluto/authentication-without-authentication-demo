@@ -7,7 +7,7 @@ namespace AuthorizationServer.Config
     {
         public static IEnumerable<ApiResource> Get() => new List<ApiResource>
             {
-                new ApiResource("api1", "My API")
+                new ApiResource("sensitive.read", "Read Sensitive Data")
             };
 
     }

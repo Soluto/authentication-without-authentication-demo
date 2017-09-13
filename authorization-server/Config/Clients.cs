@@ -21,7 +21,7 @@ namespace AuthorizationServer
                     },
 
                     // scopes that client has access to
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = { "sensitive.read" }
                 }
             };
     }

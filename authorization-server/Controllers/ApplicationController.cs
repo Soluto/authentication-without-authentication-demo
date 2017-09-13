@@ -14,6 +14,7 @@ namespace AuthorizationServer.Controllers
         {
             mStore = store;
         }
+        
         [HttpPost]
         public async Task<IActionResult> Register([FromBody]ApplicationEntity entity)
         {

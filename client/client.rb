@@ -1,5 +1,6 @@
 require 'openssl'
 require 'net/http'
+require 'json'
 require 'json/jwt'
 require 'SecureRandom'
 
@@ -42,14 +43,28 @@ while true
     token = JSON::JWT.new(payload).sign(key, :RS256)
 
     uri = URI('http://localhost:5000/connect/token')
-    res = Net::HTTP.post_form(uri, 'client_id' => 'ruby', 'client_secret' => 'secret', 'grant_type' => 'jwt-otp', 'scope' => 'api1', 'app-id' => appId, 'jwt' => token.to_s)
+    res = Net::HTTP.post_form(uri, 'client_id' => 'ruby', 'client_secret' => 'secret', 'grant_type' => 'jwt-otp', 'scope' => 'sensitive.read', 'app-id' => appId, 'jwt' => token.to_s)
 
     if (!res.kind_of? Net::HTTPSuccess)
         puts res.body
         exit(1)
     end
+    token = JSON.parse(res.body)['access_token']
 
-    puts 'token recevied, press q to exit or any key to continue'
+    uri = URI('http://localhost:4000/api/v1/sensitive')
+    req = Net::HTTP::Get.new(uri)    
+    req['Authorization'] = "Bearer #{token}"
+    http = Net::HTTP.new(uri.host, uri.port)    
+    res = http.request(req)
+
+    if (!res.kind_of? Net::HTTPSuccess)
+        puts res
+        exit(1)
+    end
+
+    puts "sensitive data! #{res.body}"
+
+    puts 'press q to exit or any key to continue'
 
     if gets.chomp == 'q'
         exit(0)
