@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/authorization-server/authorization-server.csproj"
+                "${workspaceRoot}/sensitive-api/sensitive-api.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"

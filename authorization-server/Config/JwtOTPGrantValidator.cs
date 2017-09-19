@@ -41,20 +41,12 @@ namespace AuthorizationServer.Config
         {
             try
             {
-                await AuthenticateUser(context.Request.Raw["app-id"], context.Request.Raw["jwt"]);
+                await AuthenticateUser(
+                    context.Request.Raw["device-id"], 
+                    context.Request.Raw["signature"]);
             }
-            catch (ValidationFailedException e)
+            catch (ValidationFailedException)
             {
-                /* 
-                mLogger.Error()
-                    .Message("Token validation failed")
-                    .WithRoleEnvironmentValues()
-                    .Property("DeviceId", context.UserName)
-                    .ExceptionOnlyIfNotNull(e)
-                    .Write();
-
-                */
-
                 context.Result = new GrantValidationResult(TokenRequestErrors.InvalidRequest);
 
                 return;
@@ -65,23 +57,17 @@ namespace AuthorizationServer.Config
                 throw exception;
             }
 
-            /* 
-
-            mLogger.Info()
-                .Message("Token validation succeded")
-                .WithRoleEnvironmentValues()
-                .Property("DeviceId", context.UserName)
-                .Write();
-            */
-            
-            context.Result = new GrantValidationResult(IdentityServerPrincipal.Create(context.Request.Raw["app-id"], context.Request.Raw["app-id"]));
+            context.Result = new GrantValidationResult(
+                IdentityServerPrincipal.Create(
+                    context.Request.Raw["device-id"], 
+                    context.Request.Raw["device-id"]));
         }
 
-        private async Task AuthenticateUser(string userName, string password)
+        private async Task AuthenticateUser(string deviceId, string signature)
         {
-            ValidateParameters(userName, password);
+            ValidateParameters(deviceId, signature);
 
-            var application = await mApplicationStore.Fetch(userName);
+            var application = await mApplicationStore.Fetch(deviceId);
 
             if (application == null)
             {
@@ -92,19 +78,13 @@ namespace AuthorizationServer.Config
 
             try
             {
-                /* 
-                var headers = JWT.Headers(password);
-                var log = mLogger.Info().Message("Validating signature")
-                    .WithRoleEnvironmentValues()
-                    .Property("DeviceId", application.Id);*/
-
                 var publicKey = RSA.Create(new RSAParameters{
                     Exponent = Base64UrlEncoder.DecodeBytes(application.PublicKey.e),
                     Modulus = Base64UrlEncoder.DecodeBytes(application.PublicKey.n)
                 });
 
                 payload = JWT.Decode<AuthenticationPayload>(
-                    password, 
+                    signature, 
                     publicKey);
             }
             catch (Exception e)
@@ -120,27 +100,17 @@ namespace AuthorizationServer.Config
             await ValidatePayload(payload, application);
         }
 
-        private static void ValidateParameters(string userName, string password)
+        private static void ValidateParameters(string deviceId, string signature)
         {
-            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(deviceId) || string.IsNullOrEmpty(signature))
             {
                 throw new ValidationFailedException("User or password is null");
             }
         }
 
-        private async Task ValidatePayload(AuthenticationPayload payload, ApplicationEntity application)
+        private async Task ValidatePayload(
+            AuthenticationPayload payload, ApplicationEntity application)
         {
-            /* 
-            mLogger.Info()
-                .Message("Validating payload")
-                .WithRoleEnvironmentValues()
-                .Property("DeviceId", application.Id)
-                .Property("ServerOldSyncKey", application.OldSyncKey)
-                .Property("ServerNewSyncKey", application.NewSyncKey)
-                .Property("ClientOldSyncKey", payload.OldSyncKey)
-                .Property("ClientNewSyncKey", payload.NewSyncKey)
-                .Write();*/
-            
             if (payload.OldSyncKey == application.NewSyncKey)
             {
                 application.OldSyncKey = payload.OldSyncKey;
@@ -149,7 +119,8 @@ namespace AuthorizationServer.Config
                 await mApplicationStore.UpdateState(application.Id, application.OldSyncKey,
                         application.NewSyncKey);
             }
-            else if (payload.OldSyncKey == application.OldSyncKey && payload.NewSyncKey == application.NewSyncKey)
+            else if (payload.OldSyncKey == application.OldSyncKey && 
+                payload.NewSyncKey == application.NewSyncKey)
             {
                 throw new ValidationFailedException("Payload invalid - equal to stored payload");
             }

@@ -35,6 +35,8 @@ if (!res.kind_of? Net::HTTPSuccess)
     exit(1)
 end
 
+puts "device id: #{appId}"
+
 while true 
     shouldRoll = true
     puts 'requesting token'
@@ -44,7 +46,14 @@ while true
     token = JSON::JWT.new(payload).sign(key, :RS256)
 
     uri = URI('http://localhost:8081/connect/token')
-    res = Net::HTTP.post_form(uri, 'client_id' => 'ruby', 'client_secret' => 'secret', 'grant_type' => 'jwt-otp', 'scope' => 'sensitive.read', 'app-id' => appId, 'jwt' => token.to_s)
+    res = Net::HTTP.post_form(uri, 
+        'client_id' => 'ruby', 
+        #secret is required by OpenId, but has no meaning
+        'client_secret' => 'secret', 
+        'grant_type' => 'jwt-otp', 
+        'scope' => 'sensitive.read', 
+        'device-id' => appId, 
+        'signature' => token.to_s)
 
     if (!res.kind_of? Net::HTTPSuccess)
         if (res.kind_of? Net::HTTPBadRequest)
@@ -74,7 +83,7 @@ while true
         exit(1)
     end
 
-    puts "sensitive data! #{res.body}"
+    puts "Response from sensitive api: #{res.body}"
 
     puts 'press q to exit or any key to continue'
 
