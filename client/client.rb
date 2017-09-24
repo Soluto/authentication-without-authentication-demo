@@ -22,8 +22,7 @@ req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
 jwk = key.public_key.to_jwk
 
 req.body = {
-    Id: deviceId
-, 
+    Id: deviceId, 
     OldSyncKey: payload[:OldSyncKey],
     NewSyncKey: payload[:NewSyncKey],
     PublicKey: {
@@ -58,8 +57,7 @@ while true
         'client_secret' => 'secret', 
         'grant_type' => 'jwt-otp', 
         'scope' => 'sensitive.read', 
-        'device-id' => deviceId
-    , 
+        'device-id' => deviceId, 
         'signature' => token.to_s)
 
     if (!res.kind_of? Net::HTTPSuccess)
