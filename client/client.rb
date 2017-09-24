@@ -5,13 +5,16 @@ require 'json/jwt'
 require 'SecureRandom'
 
 key = OpenSSL::PKey::RSA.new 2048
-appId = SecureRandom.random_number(99999)
+deviceId = SecureRandom.random_number(99999)
 
 payload = {
     OldSyncKey: SecureRandom.random_number(99999),
     NewSyncKey: SecureRandom.random_number(99999)
 }
-#provision
+
+puts "device id: #{deviceId}"
+
+# Registration
 
 uri = URI('http://localhost:8081/api/v1/application')
 http = Net::HTTP.new(uri.host, uri.port)
@@ -19,7 +22,8 @@ req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
 jwk = key.public_key.to_jwk
 
 req.body = {
-    Id: appId, 
+    Id: deviceId
+, 
     OldSyncKey: payload[:OldSyncKey],
     NewSyncKey: payload[:NewSyncKey],
     PublicKey: {
@@ -35,16 +39,18 @@ if (!res.kind_of? Net::HTTPSuccess)
     exit(1)
 end
 
-puts "device id: #{appId}"
+puts "registration completed"
 
 while true 
     shouldRoll = true
-    puts 'requesting token'
+    
+    #payload rolling
     payload[:OldSyncKey] = payload[:NewSyncKey]
     payload[:NewSyncKey] = SecureRandom.random_number(99999)
 
+    #token request
     token = JSON::JWT.new(payload).sign(key, :RS256)
-
+    puts 'requesting token'
     uri = URI('http://localhost:8081/connect/token')
     res = Net::HTTP.post_form(uri, 
         'client_id' => 'ruby', 
@@ -52,14 +58,16 @@ while true
         'client_secret' => 'secret', 
         'grant_type' => 'jwt-otp', 
         'scope' => 'sensitive.read', 
-        'device-id' => appId, 
+        'device-id' => deviceId
+    , 
         'signature' => token.to_s)
 
     if (!res.kind_of? Net::HTTPSuccess)
+        #Handling errors!
         if (res.kind_of? Net::HTTPBadRequest)
             puts "bad request"
-            shouldRoll = false
         else
+            shouldRoll = false
             puts "failed to get token"
             puts res
         end
@@ -72,6 +80,7 @@ while true
 
     puts 'token received'
 
+    #accessing sensitive api with the token
     uri = URI('http://localhost:8082/api/v1/sensitive')
     req = Net::HTTP::Get.new(uri)    
     req['Authorization'] = "Bearer #{token}"

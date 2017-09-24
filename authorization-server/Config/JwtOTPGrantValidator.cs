@@ -67,6 +67,7 @@ namespace AuthorizationServer.Config
         {
             ValidateParameters(deviceId, signature);
 
+            //fetch the state from storage
             var application = await mApplicationStore.Fetch(deviceId);
 
             if (application == null)
@@ -83,6 +84,7 @@ namespace AuthorizationServer.Config
                     Modulus = Base64UrlEncoder.DecodeBytes(application.PublicKey.n)
                 });
 
+                //Validate signature
                 payload = JWT.Decode<AuthenticationPayload>(
                     signature, 
                     publicKey);
@@ -111,6 +113,7 @@ namespace AuthorizationServer.Config
         private async Task ValidatePayload(
             AuthenticationPayload payload, ApplicationEntity application)
         {
+            //Valid request
             if (payload.OldSyncKey == application.NewSyncKey)
             {
                 application.OldSyncKey = payload.OldSyncKey;
@@ -119,11 +122,13 @@ namespace AuthorizationServer.Config
                 await mApplicationStore.UpdateState(application.Id, application.OldSyncKey,
                         application.NewSyncKey);
             }
+            //Handling errors
             else if (payload.OldSyncKey == application.OldSyncKey && 
                 payload.NewSyncKey == application.NewSyncKey)
             {
                 throw new ValidationFailedException("Payload invalid - equal to stored payload");
             }
+            //Probably compromised private key
             else
             {
                 await mApplicationStore.Revoke(application.Id);
