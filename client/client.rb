@@ -77,15 +77,21 @@ while true
     token = JSON.parse(res.body)['access_token']
 
     puts 'token received'
+    puts "let's get some sensitive data! enter deviceId:"
+    forDeviceId = gets.chomp
 
     #accessing sensitive api with the token
-    uri = URI('http://localhost:8082/api/v1/sensitive')
+    uri = URI("http://localhost:8082/api/v1/sensitive/#{forDeviceId}")
     req = Net::HTTP::Get.new(uri)    
     req['Authorization'] = "Bearer #{token}"
     http = Net::HTTP.new(uri.host, uri.port)    
     res = http.request(req)
 
     if (!res.kind_of? Net::HTTPSuccess)
+        if (res.kind_of? Net::HTTPUnauthorized)
+            puts "You are not authorized to read sensitive data for device #{forDeviceId}"
+            next
+        end
         puts res
         exit(1)
     end
