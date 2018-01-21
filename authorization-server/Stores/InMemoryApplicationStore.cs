@@ -13,6 +13,11 @@ namespace AuthorizationServer.Stores
 
         public Task Add(string appId, JsonWebKey publicKey, long oldSyncKey, long newSyncKey)
         {
+            //Warning: Do not do this in production, this will allows an hacker to override device's private key
+            if (mApplications.ContainsKey(appId)){
+                mApplications.Remove(appId);
+            }
+
             mApplications.Add(appId, new ApplicationEntity
             {
                 Id = appId,

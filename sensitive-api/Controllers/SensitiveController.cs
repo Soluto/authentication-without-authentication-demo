@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,14 @@ namespace sensitive_api.Controllers
     [Route("api/v1/sensitive")]
     public class SensitiveController : Controller
     {
+        private readonly Dictionary<string, string> deviceNickName;
+
+        public SensitiveController()
+        {
+            deviceNickName = new Dictionary<string, string>();
+            deviceNickName.Add("1", "Amazing device");
+        }
+
         [HttpGet("{forDeviceId}")]
         [Authorize(
             Roles = "sensitive.read"
@@ -19,7 +28,7 @@ namespace sensitive_api.Controllers
             {
                 return Unauthorized();
             }
-            return Ok($"Hello device {deviceId.Value}, here some sensitive data just for you: {new Random().Next(600)}");
+            return Ok($"{deviceNickName[forDeviceId]}");
         }
     }
 }

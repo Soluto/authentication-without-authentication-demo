@@ -3,9 +3,10 @@ require 'net/http'
 require 'json'
 require 'json/jwt'
 require 'SecureRandom'
+require 'artii'
 
 key = OpenSSL::PKey::RSA.new 2048
-deviceId = SecureRandom.random_number(99999)
+deviceId = 1
 
 payload = {
     OldSyncKey: SecureRandom.random_number(99999),
@@ -37,8 +38,6 @@ if (!res.kind_of? Net::HTTPSuccess)
     puts res    
     exit(1)
 end
-
-puts "registration completed"
 
 while true 
     shouldRoll = true
@@ -77,11 +76,10 @@ while true
     token = JSON.parse(res.body)['access_token']
 
     puts 'token received'
-    puts "let's get some sensitive data! enter deviceId:"
-    forDeviceId = gets.chomp
+    puts "let's get device name!"
 
     #accessing sensitive api with the token
-    uri = URI("http://localhost:8082/api/v1/sensitive/#{forDeviceId}")
+    uri = URI("http://localhost:8082/api/v1/sensitive/#{deviceId}")
     req = Net::HTTP::Get.new(uri)    
     req['Authorization'] = "Bearer #{token}"
     http = Net::HTTP.new(uri.host, uri.port)    
@@ -96,8 +94,8 @@ while true
         exit(1)
     end
 
-    puts "Response from sensitive api: #{res.body}"
-
+    system("artii 'hello #{res.body}!'")
+    
     puts 'press q to exit or any key to continue'
 
     if gets.chomp == 'q'
