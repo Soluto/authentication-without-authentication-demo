@@ -1,6 +1,6 @@
 # Authentication without Authentication
 A demo of a strong authentication solution that does not require any user interaction.
-This is part of a talk I did at AppSec Israel 2017 - you can find the slide deck [here](https://www.slideshare.net/SolutoTLV/app-sec-il).
+This is part of a talk I did at AppSec California 2018 - you can find the slide deck [here](https://www.slideshare.net/SolutoTLV/authentication-without-authentication-appsec-california).
 You can read more about the solution in this [blog post](https://blog.solutotlv.com/userless-mobile-authentication/?utm_source=github).
 
 ## Running the demo
